@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+workspace.xml
+tasks.xml
+
+# Logs
+logs/
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Others
+HELP.md
+*.tmp
+*.swp
+*.lock
