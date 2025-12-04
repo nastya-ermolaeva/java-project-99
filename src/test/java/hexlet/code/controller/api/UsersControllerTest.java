@@ -80,7 +80,8 @@ class UsersControllerTest {
         User u2 = Instancio.of(userModel).create();
         userRepository.saveAll(List.of(u1, u2));
 
-        var response = mockMvc.perform(get("/api/users").with(token))
+        var response = mockMvc.perform(get("/api/users")
+                .with(token))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         var body = response.getContentAsString();
@@ -92,6 +93,12 @@ class UsersControllerTest {
         var expected = userRepository.findAll();
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
         assertThatJson(body).isArray().hasSize(3);
+    }
+
+    @Test
+    void testIndexWithoutToken() throws Exception {
+        mockMvc.perform(get("/api/users"))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -110,13 +117,18 @@ class UsersControllerTest {
     }
 
     @Test
+    void testShowWithoutToken() throws Exception {
+        mockMvc.perform(get("/api/users/" + testUser.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void testCreate() throws Exception {
         var data = Instancio.of(userModel).create();
         var dto = userMapper.toCreateDTO(data);
         dto.setPassword("qwerTy12345");
 
         var response = mockMvc.perform(post("/api/users")
-                        .with(token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
@@ -156,12 +168,37 @@ class UsersControllerTest {
     }
 
     @Test
+    void testUpdateByOtherUser() throws Exception {
+        var other = Instancio.of(userModel).create();
+        userRepository.save(other);
+
+        var data = new HashMap<>();
+        data.put("firstName", "Other");
+
+        mockMvc.perform(put("/api/users/" + other.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void testDelete() throws Exception {
         mockMvc.perform(delete("/api/users/" + testUser.getId())
                         .with(token))
                 .andExpect(status().isNoContent());
 
         assertThat(userRepository.findById(testUser.getId())).isEmpty();
+    }
+
+    @Test
+    void testDeleteOtherUser() throws Exception {
+        var other = Instancio.of(userModel).create();
+        userRepository.save(other);
+
+        mockMvc.perform(delete("/api/users/" + other.getId())
+                        .with(token))
+                .andExpect(status().isForbidden());
     }
 }
 
