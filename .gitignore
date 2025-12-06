@@ -21,6 +21,7 @@ Thumbs.db
 
 # Others
 HELP.md
+node_modules/
 *.tmp
 *.swp
 *.lock
