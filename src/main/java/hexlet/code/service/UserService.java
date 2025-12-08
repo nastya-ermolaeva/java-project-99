@@ -25,15 +25,6 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public UserDTO create(UserCreateDTO data) {
-        var user = userMapper.map(data);
-        var hashedPassword = passwordEncoder.encode(data.getPassword());
-        user.setPasswordDigest(hashedPassword);
-        userRepository.save(user);
-
-        return userMapper.map(user);
-    }
-
     public List<UserDTO> getAll() {
         var users = userRepository.findAll();
         return users.stream()
@@ -44,6 +35,14 @@ public class UserService {
     public UserDTO getById(Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+        return userMapper.map(user);
+    }
+
+    public UserDTO create(UserCreateDTO data) {
+        var user = userMapper.map(data);
+        var hashedPassword = passwordEncoder.encode(data.getPassword());
+        user.setPasswordDigest(hashedPassword);
+        userRepository.save(user);
         return userMapper.map(user);
     }
 

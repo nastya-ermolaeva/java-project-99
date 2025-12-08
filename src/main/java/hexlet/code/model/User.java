@@ -50,6 +50,7 @@ public class User implements BaseEntity, UserDetails {
     private String passwordDigest;
 
     @CreatedDate
+    @Column(updatable = false)
     private LocalDate createdAt;
 
     @LastModifiedDate
