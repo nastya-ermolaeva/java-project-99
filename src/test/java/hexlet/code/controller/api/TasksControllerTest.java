@@ -12,19 +12,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hexlet.code.dto.TaskStatusCreateDTO;
-import hexlet.code.dto.TaskStatusDTO;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.model.Task;
+import hexlet.code.dto.TaskDTO;
+import hexlet.code.dto.TaskCreateDTO;
+import hexlet.code.mapper.TaskMapper;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.util.ModelGenerator;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import org.instancio.Instancio;
+import org.instancio.Select;
 import org.instancio.Model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +42,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class TaskStatusesControllerTest {
+class TasksControllerTest {
 
     @Autowired
     private WebApplicationContext wac;
@@ -51,16 +54,19 @@ class TaskStatusesControllerTest {
     private ObjectMapper om;
 
     @Autowired
-    private TaskStatusRepository tsRepository;
+    private TaskRepository taskRepository;
 
     @Autowired
-    private TaskStatusMapper tsMapper;
+    private TaskStatusRepository tsRepository;
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private TaskRepository taskRepository;
+    private TaskMapper taskMapper;
+
+    @Autowired
+    private TaskStatusMapper tsMapper;
 
     @Autowired
     private ModelGenerator modelGenerator;
@@ -68,6 +74,8 @@ class TaskStatusesControllerTest {
     private Model<User> userModel;
     private User testUser;
     private JwtRequestPostProcessor token;
+    private Model<Task> taskModel;
+    private Task testTask;
     private Model<TaskStatus> tsModel;
     private TaskStatus testTS;
 
@@ -90,59 +98,79 @@ class TaskStatusesControllerTest {
         tsModel = modelGenerator.getTaskStatusModel();
         testTS = Instancio.of(tsModel).create();
         tsRepository.save(testTS);
+
+        taskModel = modelGenerator.getTaskModel();
+        testTask = Instancio.of(taskModel)
+                .set(Select.field(Task::getTaskStatus), testTS)
+                .set(Select.field(Task::getAssignee), testUser)
+                .create();
+        taskRepository.save(testTask);
     }
 
     @Test
     void testIndex() throws Exception {
-        TaskStatus ts1 = Instancio.of(tsModel).create();
-        TaskStatus ts2 = Instancio.of(tsModel).create();
-        tsRepository.saveAll(List.of(ts1, ts2));
+        Task t1 = Instancio.of(taskModel)
+                .set(Select.field(Task::getTaskStatus), testTS)
+                .set(Select.field(Task::getAssignee), testUser)
+                .create();
 
-        var response = mockMvc.perform(get("/api/task_statuses")
+        Task t2 = Instancio.of(taskModel)
+                .set(Select.field(Task::getTaskStatus), testTS)
+                .set(Select.field(Task::getAssignee), testUser)
+                .create();
+        taskRepository.saveAll(List.of(t1, t2));
+
+        var response = mockMvc.perform(get("/api/tasks")
                         .with(token))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         var body = response.getContentAsString();
 
-        List<TaskStatusDTO> tsDTOs = om.readValue(body, new TypeReference<>() {
+        List<TaskDTO> taskDTOs = om.readValue(body, new TypeReference<>() {
         });
 
-        var actual = tsDTOs.stream().map(tsMapper::map).toList();
-        var expected = tsRepository.findAll();
+        var actual = taskDTOs.stream().map(taskMapper::map).toList();
+        var expected = taskRepository.findAll();
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
         assertThatJson(body).isArray().hasSize(3);
     }
 
     @Test
     void testIndexWithoutToken() throws Exception {
-        mockMvc.perform(get("/api/task_statuses"))
+        mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void testShow() throws Exception {
-        var response = mockMvc.perform(get("/api/task_statuses/" + testTS.getId())
-                .with(token))
+        var response = mockMvc.perform(get("/api/tasks/" + testTask.getId())
+                        .with(token))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         var body = response.getContentAsString();
 
         assertThatJson(body).and(
-                a -> a.node("id").isEqualTo(testTS.getId()),
-                a -> a.node("name").isEqualTo(testTS.getName()),
-                a -> a.node("slug").isEqualTo(testTS.getSlug())
+                a -> a.node("id").isEqualTo(testTask.getId()),
+                a -> a.node("title").isEqualTo(testTask.getName()),
+                a -> a.node("status").isEqualTo(testTS.getSlug()),
+                a -> a.node("assignee_id").isEqualTo(testUser.getId())
         );
     }
 
     @Test
     void testCreate() throws Exception {
-        var data  = Instancio.of(tsModel).create();
+        var data  = Instancio.of(taskModel)
+                .set(Select.field(Task::getTaskStatus), testTS)
+                .set(Select.field(Task::getAssignee), testUser)
+                .create();
 
-        var dto = new TaskStatusCreateDTO();
-        dto.setName(data.getName());
-        dto.setSlug(data.getSlug());
+        var dto = new TaskCreateDTO();
+        dto.setTitle(data.getName());
+        dto.setContent(data.getDescription());
+        dto.setAssigneeId(testUser.getId());
+        dto.setStatus(testTS.getSlug());
 
-        var response = mockMvc.perform(post("/api/task_statuses")
+        var response = mockMvc.perform(post("/api/tasks")
                         .with(token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(dto)))
@@ -152,20 +180,19 @@ class TaskStatusesControllerTest {
         var json = response.getContentAsString();
 
         assertThatJson(json).and(
-                a -> a.node("name").isEqualTo(data.getName()),
-                a -> a.node("slug").isEqualTo(data.getSlug())
+                a -> a.node("title").isEqualTo(data.getName()),
+                a -> a.node("status").isEqualTo(testTS.getSlug()),
+                a -> a.node("assignee_id").isEqualTo(testUser.getId())
         );
     }
 
     @Test
     void testCreateWithoutToken() throws Exception {
-        var data  = Instancio.of(tsModel).create();
+        var dto = new TaskCreateDTO();
+        dto.setTitle("Test");
+        dto.setStatus(testTS.getSlug());
 
-        var dto = new TaskStatusCreateDTO();
-        dto.setName(data.getName());
-        dto.setSlug(data.getSlug());
-
-        mockMvc.perform(post("/api/task_statuses")
+        mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(dto)))
                 .andExpect(status().isUnauthorized());
@@ -174,9 +201,9 @@ class TaskStatusesControllerTest {
     @Test
     void testUpdate() throws Exception {
         var data = new HashMap<>();
-        data.put("name", "newName");
+        data.put("title", "New title");
 
-        var response = mockMvc.perform(put("/api/task_statuses/" + testTS.getId())
+        var response = mockMvc.perform(put("/api/tasks/" + testTask.getId())
                         .with(token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
@@ -186,20 +213,20 @@ class TaskStatusesControllerTest {
         var json = response.getContentAsString();
 
         assertThatJson(json).and(
-                a -> a.node("name").isEqualTo("newName"),
-                a -> a.node("slug").isEqualTo(testTS.getSlug())
+                a -> a.node("title").isEqualTo("New title"),
+                a -> a.node("status").isEqualTo(testTS.getSlug())
         );
 
-        var updatedTS = tsRepository.findById(testTS.getId()).orElseThrow();
-        assertThat(updatedTS.getName()).isEqualTo("newName");
+        var updatedTask = taskRepository.findById(testTask.getId()).orElseThrow();
+        assertThat(updatedTask.getName()).isEqualTo("New title");
     }
 
     @Test
     void testUpdateWithoutToken() throws Exception {
         var data = new HashMap<>();
-        data.put("name", "newName");
+        data.put("title", "New title");
 
-        mockMvc.perform(put("/api/task_statuses/" + testTS.getId())
+        mockMvc.perform(put("/api/tasks/" + testTask.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isUnauthorized());
@@ -207,17 +234,31 @@ class TaskStatusesControllerTest {
 
     @Test
     void testDelete() throws Exception {
-        mockMvc.perform(delete("/api/task_statuses/" + testTS.getId())
+        mockMvc.perform(delete("/api/tasks/" + testTask.getId())
                         .with(token))
                 .andExpect(status().isNoContent());
 
-        assertThat(tsRepository.findById(testTS.getId())).isEmpty();
+        assertThat(taskRepository.findById(testTask.getId())).isEmpty();
     }
 
     @Test
     void testDeleteWithoutToken() throws Exception {
-        mockMvc.perform(delete("/api/task_statuses/" + testTS.getId()))
+        mockMvc.perform(delete("/api/tasks/" + testTask.getId()))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testDeleteUserWithTask() throws Exception {
+        mockMvc.perform(delete("/api/users/" + testUser.getId())
+                .with(token))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testDeleteTaskStatusWithTask() throws Exception {
+        mockMvc.perform(delete("/api/task_statuses/" + testTS.getId())
+                .with(token))
+                .andExpect(status().isBadRequest());
     }
 }
 

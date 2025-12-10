@@ -10,6 +10,8 @@ import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.exception.BadRequestException;
 
 import java.util.List;
 
@@ -24,6 +26,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     public List<UserDTO> getAll() {
         var users = userRepository.findAll();
@@ -62,6 +67,9 @@ public class UserService {
     }
 
     public void delete(Long id) {
+        if (!taskRepository.findByAssigneeId(id).isEmpty()) {
+            throw new BadRequestException("Cannot delete the user as they are assigned to tasks");
+        }
         userRepository.deleteById(id);
     }
 }

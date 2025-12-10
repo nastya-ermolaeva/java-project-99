@@ -16,6 +16,7 @@ import hexlet.code.dto.UserDTO;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.util.ModelGenerator;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -50,6 +51,9 @@ class UsersControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private UserMapper userMapper;
 
     @Autowired
@@ -61,6 +65,7 @@ class UsersControllerTest {
 
     @BeforeEach
     void setUp() {
+        taskRepository.deleteAll();
         userRepository.deleteAll();
 
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
