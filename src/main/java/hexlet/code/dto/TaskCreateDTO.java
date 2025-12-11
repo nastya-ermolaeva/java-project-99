@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class TaskCreateDTO {
@@ -23,4 +25,6 @@ public class TaskCreateDTO {
 
     @NotNull
     private String status;
+
+    private Set<Long> taskLabelIds;
 }

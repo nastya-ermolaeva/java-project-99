@@ -1,21 +1,22 @@
 package hexlet.code.component;
 
+import hexlet.code.dto.LabelCreateOrUpdateDTO;
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.service.UserService;
 import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.service.TaskStatusService;
-import lombok.AllArgsConstructor;
+import hexlet.code.repository.LabelRepository;
+import hexlet.code.service.LabelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Map;
+import java.util.Set;
 
 @Component
-@AllArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
     @Autowired
@@ -25,18 +26,22 @@ public class DataInitializer implements ApplicationRunner {
     private UserService userService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private TaskStatusRepository tsRepository;
 
     @Autowired
-    private  TaskStatusService tsService;
+    private TaskStatusService tsService;
+
+    @Autowired
+    private LabelRepository labelRepository;
+
+    @Autowired
+    private LabelService labelService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         initAdmin();
         initDefaultTaskStatuses();
+        initDefaultLabels();
     }
 
     public void initAdmin() {
@@ -65,12 +70,24 @@ public class DataInitializer implements ApplicationRunner {
         for (var entry : statuses.entrySet()) {
             var slug = entry.getValue();
 
-            if (tsRepository.findBySlug(slug).isEmpty()) {
+            if (!tsRepository.existsBySlug(slug)) {
                 var name = entry.getKey();
                 var taskStatus = new TaskStatusCreateDTO();
                 taskStatus.setName(name);
                 taskStatus.setSlug(slug);
                 tsService.create(taskStatus);
+            }
+        }
+    }
+
+    public void initDefaultLabels() {
+        var labels = Set.of("feature", "bug");
+
+        for (var label : labels) {
+            if (!labelRepository.existsByName(label)) {
+                var defaultLabel = new LabelCreateOrUpdateDTO();
+                defaultLabel.setName(label);
+                labelService.create(defaultLabel);
             }
         }
     }

@@ -67,7 +67,7 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        if (!taskRepository.findByAssigneeId(id).isEmpty()) {
+        if (taskRepository.existsByAssigneeId(id)) {
             throw new BadRequestException("Cannot delete the user as they are assigned to tasks");
         }
         userRepository.deleteById(id);

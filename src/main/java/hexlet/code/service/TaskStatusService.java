@@ -56,10 +56,7 @@ public class TaskStatusService {
     }
 
     public void delete(Long id) {
-        var taskStatus = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task status with id " + id + " not found"));
-
-        if (!taskRepository.findByTaskStatusSlug(taskStatus.getSlug()).isEmpty()) {
+        if (taskRepository.existsByTaskStatusId(id)) {
             throw new BadRequestException("Cannot delete the task status as it is used in tasks");
         }
 

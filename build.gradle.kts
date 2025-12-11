@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
 	java
-	id("org.springframework.boot") version "3.4.12"
+	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("com.github.ben-manes.versions") version "0.52.0"
 	id("checkstyle")
@@ -38,6 +38,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("net.datafaker:datafaker:2.5.2")
 	implementation("org.instancio:instancio-junit:5.5.1")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
