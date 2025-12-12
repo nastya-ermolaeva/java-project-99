@@ -167,6 +167,72 @@ class TasksControllerTest {
     }
 
     @Test
+    void testIndexWithParams() throws Exception {
+        testTask.setName("Perfect match");
+        taskRepository.save(testTask);
+
+        var otherUser = Instancio.of(userModel).create();
+        userRepository.save(otherUser);
+
+        Task t1 = Instancio.of(taskModel)
+                .set(Select.field(Task::getTaskStatus), testTS)
+                .set(Select.field(Task::getAssignee), otherUser)
+                .set(Select.field(Task::getLabels), labels)
+                .create();
+        t1.setName("Perfect marsh");
+        taskRepository.save(t1);
+
+        var otherStatus = Instancio.of(tsModel).create();
+        tsRepository.save(otherStatus);
+
+        var otherLabel = Instancio.of(labelModel).create();
+        labelRepository.save(otherLabel);
+
+        Task t2 = Instancio.of(taskModel)
+                .set(Select.field(Task::getTaskStatus), otherStatus)
+                .set(Select.field(Task::getAssignee), testUser)
+                .set(Select.field(Task::getLabels), Set.of(otherLabel))
+                .create();
+        t2.setName("Perfect mango");
+        taskRepository.save(t2);
+
+        var response = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("titleCont", "perfect")
+                                .param("assigneeId", testUser.getId().toString())
+                                .param("status", testTS.getSlug())
+                                .param("labelId", testLabel.getId().toString())
+                                .with(token)
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        var body = response.getContentAsString();
+        List<TaskDTO> results = om.readValue(body, new TypeReference<>() { });
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getId()).isEqualTo(testTask.getId());
+    }
+
+    @Test
+    void testIndexWithParamsAndNoResult() throws Exception {
+        var response = mockMvc.perform(
+                        get("/api/tasks")
+                                .param("labelId", String.valueOf(testLabel.getId() + 1))
+                                .with(token)
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        var body = response.getContentAsString();
+        List<TaskDTO> results = om.readValue(body, new TypeReference<>() { });
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
     void testShow() throws Exception {
         var response = mockMvc.perform(get("/api/tasks/" + testTask.getId())
                         .with(token))
@@ -228,6 +294,20 @@ class TasksControllerTest {
     }
 
     @Test
+    void testCreateValidationFails() throws Exception {
+        var data = new HashMap<String, Object>();
+        data.put("title", "");
+        data.put("status", null);
+        data.put("content", "test");
+
+        mockMvc.perform(post("/api/tasks")
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testUpdate() throws Exception {
         var data = new HashMap<>();
         data.put("title", "New title");
@@ -259,6 +339,18 @@ class TasksControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testUpdateValidationFails() throws Exception {
+        var data = new HashMap<>();
+        data.put("title", "");
+
+        mockMvc.perform(put("/api/tasks/" + testTask.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

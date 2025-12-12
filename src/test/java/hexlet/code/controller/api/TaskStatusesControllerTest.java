@@ -172,6 +172,19 @@ class TaskStatusesControllerTest {
     }
 
     @Test
+    void testCreateValidationFails() throws Exception {
+        var data = new HashMap<String, Object>();
+        data.put("name", "");
+        data.put("slug", "ab");
+
+        mockMvc.perform(post("/api/task_statuses")
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testUpdate() throws Exception {
         var data = new HashMap<>();
         data.put("name", "newName");
@@ -203,6 +216,18 @@ class TaskStatusesControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testUpdateValidationFails() throws Exception {
+        var data = new HashMap<>();
+        data.put("slug", "");
+
+        mockMvc.perform(put("/api/task_statuses/" + testUser.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

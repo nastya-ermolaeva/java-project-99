@@ -168,6 +168,18 @@ class LabelsControllerTest {
     }
 
     @Test
+    void testCreateValidationFails() throws Exception {
+        var data = new HashMap<String, Object>();
+        data.put("name", "bo");
+
+        mockMvc.perform(post("/api/labels")
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testUpdate() throws Exception {
         var data = new HashMap<>();
         data.put("name", "New name");
@@ -198,6 +210,18 @@ class LabelsControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testUpdateValidationFails() throws Exception {
+        var data = new HashMap<>();
+        data.put("name", "");
+
+        mockMvc.perform(put("/api/labels/" + testLabel.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

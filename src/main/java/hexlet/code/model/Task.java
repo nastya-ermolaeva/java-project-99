@@ -49,6 +49,7 @@ public class Task implements BaseEntity {
     @ToString.Include
     private Integer index;
 
+    @Column(columnDefinition = "TEXT")
     @ToString.Include
     private String description;
 

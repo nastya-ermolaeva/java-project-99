@@ -150,6 +150,20 @@ class UsersControllerTest {
     }
 
     @Test
+    void testCreateValidationFails() throws Exception {
+        var data = new HashMap<String, Object>();
+        data.put("email", "");
+        data.put("password", "ab");
+        data.put("firstName", "Anton");
+        data.put("lastName", "Bourbon");
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testUpdate() throws Exception {
         var data = new HashMap<>();
         data.put("firstName", "Mike");
@@ -170,6 +184,18 @@ class UsersControllerTest {
 
         var updatedUser = userRepository.findById(testUser.getId()).orElseThrow();
         assertThat(updatedUser.getFirstName()).isEqualTo("Mike");
+    }
+
+    @Test
+    void testUpdateValidationFails() throws Exception {
+        var data = new HashMap<>();
+        data.put("password", "ab");
+
+        mockMvc.perform(put("/api/users/" + testUser.getId())
+                        .with(token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -204,6 +230,49 @@ class UsersControllerTest {
         mockMvc.perform(delete("/api/users/" + other.getId())
                         .with(token))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testLogin() throws Exception {
+        var data = Instancio.of(userModel).create();
+        var dto = userMapper.toCreateDTO(data);
+        dto.setPassword("qwerTy12345");
+
+        var request = post("/api/users")
+                .with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(dto));
+        mockMvc.perform(request);
+
+        var login = new HashMap<>();
+        login.put("username", dto.getEmail());
+        login.put("password", dto.getPassword());
+
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(login)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testLoginFails() throws Exception {
+        var data = Instancio.of(userModel).create();
+        var dto = userMapper.toCreateDTO(data);
+        dto.setPassword("qwerTy12345");
+
+        var request = post("/api/users")
+                .with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(dto));
+        mockMvc.perform(request);
+
+        var login = new HashMap<>();
+        login.put("username", dto.getEmail());
+        login.put("password", dto.getPassword() + "wrong");
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(login)))
+                .andExpect(status().isUnauthorized());
     }
 }
 
