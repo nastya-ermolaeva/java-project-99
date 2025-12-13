@@ -16,3 +16,4 @@ spring:
 
 sentry:
   dsn: ${SENTRY_DSN}
+  enabled: true
