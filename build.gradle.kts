@@ -10,6 +10,7 @@ plugins {
 	id("org.sonarqube") version "6.2.0.5505"
 	id("jacoco")
 	id("io.freefair.lombok") version "9.0.0"
+	id("io.sentry.jvm.gradle") version "5.12.2"
 }
 
 group = "hexlet.code"
@@ -88,4 +89,15 @@ sonar {
 		property("sonar.host.url", "https://sonarcloud.io")
 		property("sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
 	}
+}
+
+sentry {
+	includeSourceContext = true
+	org = "nastya-ermolaeva"
+	projectName = "java-project-99"
+	authToken = System.getenv("SENTRY_AUTH_TOKEN")
+}
+
+tasks.sentryBundleSourcesJava {
+	enabled = System.getenv("SENTRY_AUTH_TOKEN") != null
 }
