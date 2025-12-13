@@ -8,9 +8,9 @@ import org.openapitools.jackson.nullable.JsonNullable;
 @Getter
 @Setter
 public class TaskStatusUpdateDTO {
-    @Size(min = 1)
+    @Size(min = 1, message = "Name must be at least 1 character long")
     private JsonNullable<String> name;
 
-    @Size(min = 1)
+    @Size(min = 1, message = "Slug must be at least 1 character long")
     private JsonNullable<String> slug;
 }

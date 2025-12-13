@@ -16,7 +16,7 @@ public class TaskUpdateDTO {
     @JsonProperty("assignee_id")
     private JsonNullable<Long> assigneeId;
 
-    @Size(min = 1)
+    @Size(min = 1, message = "Title must be at least 1 character long")
     private JsonNullable<String> title;
 
     private JsonNullable<String> content;

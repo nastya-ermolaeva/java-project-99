@@ -10,6 +10,6 @@ import lombok.Setter;
 public class LabelCreateOrUpdateDTO {
 
     @NotBlank
-    @Size(min = 3, max = 1000)
+    @Size(min = 3, max = 1000, message = "Name must be between 3 and 1000 characters long")
     private String name;
 }

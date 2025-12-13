@@ -9,10 +9,10 @@ import jakarta.validation.constraints.Size;
 @Setter
 public class TaskStatusCreateDTO {
     @NotBlank
-    @Size(min = 1)
+    @Size(min = 1, message = "Name must be at least 1 character long")
     private String name;
 
     @NotBlank
-    @Size(min = 1)
+    @Size(min = 1, message = "Slug must be at least 1 character long")
     private String slug;
 }

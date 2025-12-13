@@ -18,7 +18,7 @@ public class TaskCreateDTO {
     private Long assigneeId;
 
     @NotBlank
-    @Size(min = 1)
+    @Size(min = 1, message = "Title must be at least 1 character long")
     private String title;
 
     private String content;
