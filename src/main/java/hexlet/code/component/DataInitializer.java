@@ -9,33 +9,28 @@ import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.service.TaskStatusService;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.service.LabelService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.Set;
 
+@AllArgsConstructor
 @Component
 public class DataInitializer implements ApplicationRunner {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private TaskStatusRepository tsRepository;
+    private final TaskStatusRepository tsRepository;
 
-    @Autowired
-    private TaskStatusService tsService;
+    private final TaskStatusService tsService;
 
-    @Autowired
-    private LabelRepository labelRepository;
+    private final LabelRepository labelRepository;
 
-    @Autowired
-    private LabelService labelService;
+    private final LabelService labelService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {

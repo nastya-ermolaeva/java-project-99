@@ -1,7 +1,7 @@
 package hexlet.code.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import hexlet.code.dto.TaskCreateDTO;
 import hexlet.code.dto.TaskDTO;
@@ -14,17 +14,15 @@ import hexlet.code.specification.TaskSpecification;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class TaskService {
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
-    @Autowired
-    private TaskMapper taskMapper;
+    private final TaskMapper taskMapper;
 
-    @Autowired
-    private TaskSpecification specBuilder;
+    private final TaskSpecification specBuilder;
 
     public List<TaskDTO> getAll(TaskParamsDTO params) {
         var spec = specBuilder.build(params);

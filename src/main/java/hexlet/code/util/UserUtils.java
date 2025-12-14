@@ -1,7 +1,6 @@
 package hexlet.code.util;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +11,7 @@ import hexlet.code.repository.UserRepository;
 @AllArgsConstructor
 public class UserUtils {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public User getCurrentUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -21,6 +19,11 @@ public class UserUtils {
             return null;
         }
         var email = authentication.getName();
-        return userRepository.findByEmail(email).get();
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    public boolean isCurrentUserId(long id) {
+        var currUser = getCurrentUser();
+        return currUser != null && currUser.getId() == id;
     }
 }

@@ -7,9 +7,10 @@ import hexlet.code.service.UserService;
 import hexlet.code.util.UserUtils;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,19 +20,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private UserUtils userUtils;
+    private final UserUtils userUtils;
 
     @GetMapping
     ResponseEntity<List<UserDTO>> index() {
@@ -55,25 +54,15 @@ public class UsersController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@userUtils.isCurrentUserId(#id)")
     UserDTO update(@Valid @RequestBody UserUpdateDTO data, @PathVariable Long id) {
-        var currentUser = userUtils.getCurrentUser();
-
-        if (currentUser == null || !currentUser.getId().equals(id)) {
-            throw new AccessDeniedException("You can update only your profile");
-        }
-
         return userService.update(data, id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@userUtils.isCurrentUserId(#id)")
     void delete(@PathVariable Long id) {
-        var currentUser = userUtils.getCurrentUser();
-
-        if (currentUser == null || !currentUser.getId().equals(id)) {
-            throw new AccessDeniedException("You can delete only your profile");
-        }
-
         userService.delete(id);
     }
 }

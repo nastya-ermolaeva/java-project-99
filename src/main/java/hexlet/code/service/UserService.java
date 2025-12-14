@@ -1,8 +1,8 @@
 package hexlet.code.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
@@ -15,20 +15,17 @@ import hexlet.code.exception.BadRequestException;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
     public List<UserDTO> getAll() {
         var users = userRepository.findAll();

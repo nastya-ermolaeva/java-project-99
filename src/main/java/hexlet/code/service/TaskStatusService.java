@@ -1,7 +1,7 @@
 package hexlet.code.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.dto.TaskStatusDTO;
@@ -14,17 +14,15 @@ import hexlet.code.exception.BadRequestException;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class TaskStatusService {
 
-    @Autowired
-    private TaskStatusRepository repository;
+    private final TaskStatusRepository repository;
 
-    @Autowired
-    private TaskStatusMapper mapper;
+    private final TaskStatusMapper mapper;
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
     public List<TaskStatusDTO> getAll() {
         var taskStatuses = repository.findAll();

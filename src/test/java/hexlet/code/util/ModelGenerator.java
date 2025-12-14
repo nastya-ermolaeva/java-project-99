@@ -29,7 +29,7 @@ public class ModelGenerator {
                 .supply(Select.field(User::getLastName), () -> faker.name().lastName())
                 .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
                 .supply(Select.field(User::getPasswordDigest), () ->
-                        passwordEncoder.encode(faker.internet().password(8, 20)))
+                        passwordEncoder.encode(faker.regexify("[A-Za-z0-9!@#$%^&*]{8,15}")))
                 .toModel();
     }
 

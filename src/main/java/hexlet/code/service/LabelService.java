@@ -1,7 +1,7 @@
 package hexlet.code.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import hexlet.code.dto.LabelCreateOrUpdateDTO;
 import hexlet.code.dto.LabelDTO;
@@ -13,17 +13,15 @@ import hexlet.code.exception.BadRequestException;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class LabelService {
 
-    @Autowired
-    private LabelRepository labelRepository;
+    private final LabelRepository labelRepository;
 
-    @Autowired
-    private LabelMapper labelMapper;
+    private final LabelMapper labelMapper;
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
     public List<LabelDTO> getAll() {
         var labels = labelRepository.findAll();
