@@ -35,6 +35,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userService;
 
+    @SuppressWarnings("java:S4502")
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector)
             throws Exception {
