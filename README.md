@@ -10,5 +10,28 @@
 # Description
 **Task Manager** is a task management system similar to [Redmine](http://www.redmine.org/). It allows users to create tasks, assign them to executors, and update their statuses. Registration and authentication are required to use the system.
 
-# Deploy on Render
+### How to Install
+```bash 
+git clone https://github.com/nastya-ermolaeva/java-project-99.git
+cd java-project-99
+```
+
+### How to Build
+```bash
+./gradlew build
+```
+
+### How to Run
+```bash 
+./gradlew bootRun
+```
+### Default Credentials
+
+You can use the following credentials to log in:
+* **Username (email):** hexlet@example.com
+* **Password:** qwerty
+
+### Deploy on Render
 [Try The Service Now](https://java-project-99-y9pe.onrender.com)
+
+

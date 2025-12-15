@@ -17,7 +17,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import hexlet.code.service.CustomUserDetailsService;
+import hexlet.code.service.impl.CustomUserDetailsService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;

@@ -14,6 +14,7 @@ import org.mapstruct.MappingTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,10 +44,13 @@ public abstract class LabelMapper {
             return Collections.emptySet();
         }
 
-        return ids.stream()
-                .map(id -> labelRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Label with id " + id + " not found")))
-                .collect(Collectors.toSet());
+        var labels = labelRepository.findAllById(ids);
+
+        if (labels.size() != ids.size()) {
+            throw new ResourceNotFoundException("Some labels were not found");
+        }
+
+        return new HashSet<>(labels);
     }
 
     @Named("labelsToIds")
